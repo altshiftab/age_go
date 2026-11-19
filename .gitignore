@@ -1,0 +1,11 @@
+*
+!/.gitignore
+!/go.mod
+!/go.sum
+!/LICENSE
+!/README.md
+
+!/pkg/
+!/pkg/**/
+!/pkg/**/*.go
+!/pkg/age/testdata/cctv/*
