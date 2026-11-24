@@ -88,6 +88,9 @@ func TestDecodeRefusesParseErrors(t *testing.T) {
 	}{
 		{name: "a checksum mismatch", input: "age1qqqqqqqq"},
 		{name: "mixed case", input: "Age1EGTZVFFV20835NWYV6270LXYVK2VKNX2MMDKWYKLMGR48UAWX40Q2P2LM0"},
+		// The Kelvin sign folds to k: as such it would decode to the key the k spells.
+		{name: "a Kelvin sign for a K", input: "AGE-SECRET-\u212aEY-1EGTZVFFV20835NWYV6270LXYVK2VKNX2MMDKWYKLMGR48UAWX40Q2P2LM0"},
+		{name: "a Kelvin sign in the data", input: "AGE-SECRET-KEY-1EGTZVFFV20835NWYV6270LXYV\u212a2VKNX2MMDKWYKLMGR48UAWX40Q2P2LM0"},
 		// Ten bits: a byte, and two padding bits that are not zero.
 		{name: "non-zero padding", input: groupsString("a", []byte{0, 1})},
 		// Five bits: padding a whole group long, holding no byte.

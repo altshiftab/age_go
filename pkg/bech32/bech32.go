@@ -186,6 +186,13 @@ func decodeGroups(s string) (string, []byte, error) {
 	if s == "" {
 		return "", nil, altshiftErrors.NewWithTrace(empty_error.New("bech32 string"))
 	}
+	// Checked before any case is folded: Unicode folding maps some characters outside ASCII onto
+	// ASCII letters (U+212A, the Kelvin sign, onto k), which would let them through.
+	for i := range len(s) {
+		if s[i] < 33 || s[i] > 126 {
+			return "", nil, parseError("a character is outside 33-126")
+		}
+	}
 	lower := strings.ToLower(s)
 	if lower != s && strings.ToUpper(s) != s {
 		return "", nil, parseError("the string mixes upper and lower case")
