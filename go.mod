@@ -3,7 +3,7 @@ module github.com/altshiftab/age_go
 go 1.27
 
 require (
-	github.com/altshiftab/utils_go v1.118.0
+	github.com/altshiftab/utils_go v1.129.0
 	golang.org/x/crypto v0.59.0
 )
 
