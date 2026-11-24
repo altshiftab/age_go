@@ -141,6 +141,10 @@ func parseHeader(src *bufio.Reader) (*header, error) {
 		}
 
 		if rest, found := strings.CutPrefix(line, footerPrefix); found {
+			// The format requires at least one stanza, and the reference implementation refuses a header with none.
+			if len(parsed.stanzas) == 0 {
+				return nil, headerError("the header has no stanza")
+			}
 			macString, found := strings.CutPrefix(rest, " ")
 			if !found {
 				return nil, headerError("the footer has no space before its mac")

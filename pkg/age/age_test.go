@@ -180,6 +180,14 @@ func TestTampered(t *testing.T) {
 		{name: "truncated by one byte", mutate: truncate(len(encrypted) - 1), want: ErrPayload, wantReleased: 2 * chunkSize},
 		{name: "no payload", mutate: truncate(chunkStart(0)), want: ErrPayload},
 		{
+			name: "no stanza",
+			mutate: func(file []byte) []byte {
+				versionEnd := bytes.IndexByte(file, '\n') + 1
+				return append(slices.Clone(file[:versionEnd]), file[macStart-len("--- "):]...)
+			},
+			want: ErrHeader,
+		},
+		{
 			name: "first two chunks swapped",
 			mutate: func(file []byte) []byte {
 				first := slices.Clone(file[chunkStart(0):chunkStart(1)])
@@ -238,6 +246,8 @@ func TestDecryptRefuses(t *testing.T) {
 	}{
 		{name: "wrong passphrase", passphrase: []byte("wrong"), maxWorkFactor: MaxWorkFactor, want: ErrNoMatch},
 		{name: "work factor above the limit", passphrase: testPassphrase, maxWorkFactor: testWorkFactor - 1, want: ErrHeader},
+		{name: "a limit of zero", passphrase: testPassphrase, maxWorkFactor: 0, want: altshiftErrors.ErrValidationError},
+		{name: "a limit past what scrypt can do", passphrase: testPassphrase, maxWorkFactor: 64, want: altshiftErrors.ErrValidationError},
 		{name: "right passphrase", passphrase: testPassphrase, maxWorkFactor: testWorkFactor, want: nil},
 	}
 

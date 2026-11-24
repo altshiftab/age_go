@@ -28,6 +28,10 @@ const (
 	// MaxWorkFactor is the highest work factor the age command decrypts.
 	MaxWorkFactor = 22
 
+	// workFactorLimit is the highest work factor a writer or reader is let use, as the reference implementation
+	// has it: 2^30 iterations, beyond which 1<<workFactor no longer makes a work load scrypt can do.
+	workFactorLimit = 30
+
 	fileKeySize = 16
 )
 
@@ -62,7 +66,7 @@ func NewScryptWriter(dst io.Writer, passphrase []byte, workFactor int) (io.Write
 	if len(passphrase) == 0 {
 		return nil, altshiftErrors.NewWithTrace(empty_error.New("passphrase"))
 	}
-	if workFactor < 1 || workFactor > 30 {
+	if workFactor < 1 || workFactor > workFactorLimit {
 		return nil, altshiftErrors.NewWithTrace(
 			fmt.Errorf("%w: work factor %d is out of range", altshiftErrors.ErrValidationError, workFactor),
 		)
@@ -104,13 +108,18 @@ func NewScryptWriter(dst io.Writer, passphrase []byte, workFactor int) (io.Write
 // to io.EOF before trusting any of it.
 //
 // maxWorkFactor bounds the scrypt work a file can demand; a header asking for
-// more is refused before any is done.
+// more is refused before any is done. It is 1 to 30, as a writer's work factor is.
 func NewScryptReader(src io.Reader, passphrase []byte, maxWorkFactor int) (io.Reader, error) {
 	if src == nil {
 		return nil, altshiftErrors.NewWithTrace(nil_error.New("src"))
 	}
 	if len(passphrase) == 0 {
 		return nil, altshiftErrors.NewWithTrace(empty_error.New("passphrase"))
+	}
+	if maxWorkFactor < 1 || maxWorkFactor > workFactorLimit {
+		return nil, altshiftErrors.NewWithTrace(
+			fmt.Errorf("%w: max work factor %d is out of range", altshiftErrors.ErrValidationError, maxWorkFactor),
+		)
 	}
 
 	buffered := bufio.NewReader(src)
